@@ -20,7 +20,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
 
   fetchClients() async {
     final response =
-        await http.get(Uri.parse('http://localhost:5219/api/clients'));
+        await http.get(Uri.parse('http://localhost:5000/api/clients'));
     if (response.statusCode == 200) {
       setState(() {
         clients = (json.decode(response.body) as List)

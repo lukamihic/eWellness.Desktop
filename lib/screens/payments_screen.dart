@@ -20,7 +20,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
   fetchPayments() async {
     final response =
-        await http.get(Uri.parse('http://localhost:5219/api/payments'));
+        await http.get(Uri.parse('http://localhost:5000/api/payments'));
     if (response.statusCode == 200) {
       setState(() {
         payments = (json.decode(response.body) as List)

@@ -22,7 +22,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   fetchServices() async {
     final response =
-        await http.get(Uri.parse('http://localhost:5219/api/services'));
+        await http.get(Uri.parse('http://localhost:5000/api/services'));
     if (response.statusCode == 200) {
       setState(() {
         services = (json.decode(response.body) as List)
@@ -41,7 +41,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   fetchServiceCategories() async {
     final response = await http
-        .get(Uri.parse('http://localhost:5219/api/servicecategories'));
+        .get(Uri.parse('http://localhost:5000/api/servicecategories'));
     if (response.statusCode == 200) {
       setState(() {
         serviceCategories = (json.decode(response.body) as List)
@@ -61,7 +61,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
           serviceCategories: serviceCategories,
           onSubmit: (service) async {
             final response = await http.post(
-              Uri.parse('http://localhost:5219/api/services'),
+              Uri.parse('http://localhost:5000/api/services'),
               headers: {'Content-Type': 'application/json'},
               body: jsonEncode(service.toJson()),
             );
@@ -93,7 +93,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
           onSubmit: (updatedService) async {
             final response = await http.put(
               Uri.parse(
-                  'http://localhost:5219/api/services/${updatedService.id}'),
+                  'http://localhost:5000/api/services/${updatedService.id}'),
               headers: {'Content-Type': 'application/json'},
               body: jsonEncode(updatedService.toJson()),
             );
@@ -111,7 +111,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   void _deleteService(int serviceId) async {
     final response = await http
-        .delete(Uri.parse('http://localhost:5219/api/services/$serviceId'));
+        .delete(Uri.parse('http://localhost:5000/api/services/$serviceId'));
     if (response.statusCode == 200) {
       fetchServices();
       ScaffoldMessenger.of(context).showSnackBar(

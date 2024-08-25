@@ -20,7 +20,7 @@ class _TipsScreenState extends State<TipsScreen> {
 
   fetchTips() async {
     final response =
-        await http.get(Uri.parse('http://localhost:5219/api/tips'));
+        await http.get(Uri.parse('http://localhost:5000/api/tips'));
     if (response.statusCode == 200) {
       setState(() {
         tips = (json.decode(response.body) as List)
@@ -44,7 +44,7 @@ class _TipsScreenState extends State<TipsScreen> {
         return TipForm(
           onSubmit: (tip) async {
             final response = await http.post(
-              Uri.parse('http://localhost:5219/api/tips'),
+              Uri.parse('http://localhost:5000/api/tips'),
               headers: {'Content-Type': 'application/json'},
               body: jsonEncode(tip.toJson()),
             );
@@ -74,7 +74,7 @@ class _TipsScreenState extends State<TipsScreen> {
           tip: tip,
           onSubmit: (updatedTip) async {
             final response = await http.put(
-              Uri.parse('http://localhost:5219/api/tips/${updatedTip.id}'),
+              Uri.parse('http://localhost:5000/api/tips/${updatedTip.id}'),
               headers: {'Content-Type': 'application/json'},
               body: jsonEncode(updatedTip.toJson()),
             );
@@ -98,7 +98,7 @@ class _TipsScreenState extends State<TipsScreen> {
 
   void _deleteTip(int id) async {
     final response =
-        await http.delete(Uri.parse('http://localhost:5219/api/tips/$id'));
+        await http.delete(Uri.parse('http://localhost:5000/api/tips/$id'));
     if (response.statusCode == 200) {
       fetchTips();
       ScaffoldMessenger.of(context).showSnackBar(
