@@ -434,7 +434,9 @@ class _ServiceFormState extends State<ServiceForm> {
                     price: double.parse(_priceController.text),
                     duration: int.parse(_durationController.text),
                     isAvailable: _isAvailable,
-                    imageUrl: _imageUrlController.text,
+                    imageUrl: _imageUrlController.text.isEmpty
+                        ? 'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg'
+                        : _imageUrlController.text,
                     serviceCategoryId: _selectedCategoryId!,
                     serviceCategoryName: widget.serviceCategories
                         .firstWhere(
