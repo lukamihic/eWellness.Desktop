@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config.dart' as config show apiUri;
 
 class TipsScreen extends StatefulWidget {
   @override
@@ -97,8 +98,9 @@ class _TipsScreenState extends State<TipsScreen> {
   }
 
   void _deleteTip(int id) async {
-    final response =
-        await http.delete(Uri.parse('http://localhost:5000/api/tips/$id'));
+    const apiUrl =
+        String.fromEnvironment('API_URI', defaultValue: config.apiUri);
+    final response = await http.get(Uri.parse('${apiUrl}/tips/$id'));
     if (response.statusCode == 200) {
       fetchTips();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -115,19 +117,21 @@ class _TipsScreenState extends State<TipsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Tips'),
-      ),
       body: tips.isEmpty
-          ? Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Text(
+                'No tips yet',
+                style: TextStyle(fontSize: 24, color: Colors.grey),
+              ),
+            )
           : SfDataGrid(
               source: tipDataSource,
               columns: [
-                GridColumn(
-                  columnName: 'id',
-                  label: Text('ID', textAlign: TextAlign.center),
-                  minimumWidth: (0.1 * MediaQuery.sizeOf(context).width),
-                ),
+                // GridColumn(
+                //   columnName: 'id',
+                //   label: Text('ID', textAlign: TextAlign.center),
+                //   minimumWidth: (0.1 * MediaQuery.sizeOf(context).width),
+                // ),
                 GridColumn(
                   columnName: 'name',
                   label: Text('Name', textAlign: TextAlign.center),
@@ -198,7 +202,7 @@ class TipDataSource extends DataGridSource {
   }) {
     dataGridRows = tips
         .map<DataGridRow>((tip) => DataGridRow(cells: [
-              DataGridCell<int>(columnName: 'id', value: tip.id),
+              // DataGridCell<int>(columnName: 'id', value: tip.id),
               DataGridCell<String>(columnName: 'name', value: tip.name ?? ''),
               DataGridCell<String>(
                   columnName: 'description', value: tip.description ?? ''),
@@ -236,7 +240,7 @@ class TipDataSource extends DataGridSource {
       Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(row.getCells()[0].value.toString()),
+        child: Text(row.getCells()[0].value),
       ),
       Container(
         padding: EdgeInsets.all(8.0),
@@ -246,19 +250,14 @@ class TipDataSource extends DataGridSource {
       Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(row.getCells()[2].value),
-      ),
-      Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        child: (row.getCells()[3].value as bool)
+        child: (row.getCells()[2].value as bool)
             ? Icon(Icons.check, color: Colors.green)
             : Icon(Icons.close, color: Colors.red),
       ),
       Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: row.getCells()[4].value,
+        child: row.getCells()[3].value,
       ),
     ]);
   }

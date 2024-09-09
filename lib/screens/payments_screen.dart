@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config.dart' as config show apiUri;
 
 class PaymentsScreen extends StatefulWidget {
   @override
@@ -19,8 +20,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   }
 
   fetchPayments() async {
-    final response =
-        await http.get(Uri.parse('http://localhost:5000/api/payments'));
+    const apiUrl =
+        String.fromEnvironment('API_URI', defaultValue: config.apiUri);
+    final response = await http.get(Uri.parse('${apiUrl}/payments'));
     if (response.statusCode == 200) {
       setState(() {
         payments = (json.decode(response.body) as List)
@@ -37,14 +39,19 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: payments.isEmpty
-          ? Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Text(
+                'No payments yet',
+                style: TextStyle(fontSize: 24, color: Colors.grey),
+              ),
+            )
           : SfDataGrid(
               source: paymentDataSource,
               columns: [
-                GridColumn(
-                    columnName: 'id',
-                    label: Text('ID', textAlign: TextAlign.center),
-                    minimumWidth: (0.2 * MediaQuery.sizeOf(context).width)),
+                // GridColumn(
+                //     columnName: 'id',
+                //     label: Text('ID', textAlign: TextAlign.center),
+                //     minimumWidth: (0.2 * MediaQuery.sizeOf(context).width)),
                 GridColumn(
                     columnName: 'amount',
                     label: Text('Amount', textAlign: TextAlign.center),
@@ -81,7 +88,7 @@ class PaymentDataSource extends DataGridSource {
   PaymentDataSource({required List<Payment> payments}) {
     dataGridRows = payments
         .map<DataGridRow>((payment) => DataGridRow(cells: [
-              DataGridCell<int>(columnName: 'id', value: payment.id),
+              // DataGridCell<int>(columnName: 'id', value: payment.id),
               DataGridCell<String>(
                   columnName: 'amount', value: 'BAM ' + payment.amount),
               DataGridCell<String>(
@@ -113,11 +120,6 @@ class PaymentDataSource extends DataGridSource {
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: Text(row.getCells()[2].value.toString()),
-      ),
-      Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        child: Text(row.getCells()[3].value.toString()),
       ),
     ]);
   }

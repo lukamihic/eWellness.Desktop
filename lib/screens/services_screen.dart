@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config.dart' as config show apiUri;
 
 class ServicesScreen extends StatefulWidget {
   @override
@@ -110,8 +111,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   void _deleteService(int serviceId) async {
-    final response = await http
-        .delete(Uri.parse('http://localhost:5000/api/services/$serviceId'));
+    const apiUrl =
+        String.fromEnvironment('API_URI', defaultValue: config.apiUri);
+    final response = await http.get(Uri.parse('${apiUrl}/services/$serviceId'));
     if (response.statusCode == 200) {
       fetchServices();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -129,7 +131,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: services.isEmpty
-          ? Center(child: CircularProgressIndicator())
+          ? Center(
+              child: Text(
+                'No services yet',
+                style: TextStyle(fontSize: 24, color: Colors.grey),
+              ),
+            )
           : Column(
               children: [
                 Expanded(
@@ -137,19 +144,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     source: serviceDataSource,
                     columns: [
                       GridColumn(
-                        columnName: 'id',
-                        label: Text('ID', textAlign: TextAlign.center),
-                        minimumWidth: 0.2 * MediaQuery.sizeOf(context).width,
-                      ),
-                      GridColumn(
                         columnName: 'name',
                         label: Text('Name', textAlign: TextAlign.center),
-                        minimumWidth: 0.6 * MediaQuery.sizeOf(context).width,
+                        minimumWidth: 0.7 * MediaQuery.sizeOf(context).width,
                       ),
                       GridColumn(
                         columnName: 'actions',
                         label: Text('     Actions'),
-                        minimumWidth: 0.2 * MediaQuery.sizeOf(context).width,
+                        minimumWidth: 0.3 * MediaQuery.sizeOf(context).width,
                       ),
                     ],
                   ),
@@ -243,7 +245,6 @@ class ServiceDataSource extends DataGridSource {
       required this.onDelete}) {
     dataGridRows = services
         .map<DataGridRow>((service) => DataGridRow(cells: [
-              DataGridCell<int>(columnName: 'id', value: service.id),
               DataGridCell<String>(columnName: 'name', value: service.name),
               DataGridCell<Widget>(
                   columnName: 'actions',
@@ -276,17 +277,12 @@ class ServiceDataSource extends DataGridSource {
       Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(row.getCells()[0].value.toString()),
+        child: Text(row.getCells()[0].value),
       ),
       Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(row.getCells()[1].value),
-      ),
-      Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        child: row.getCells()[2].value,
+        child: row.getCells()[1].value,
       ),
     ]);
   }
