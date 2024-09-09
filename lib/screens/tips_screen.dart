@@ -140,7 +140,7 @@ class _TipsScreenState extends State<TipsScreen> {
                 GridColumn(
                   columnName: 'description',
                   label: Text('Description', textAlign: TextAlign.center),
-                  minimumWidth: (0.45 * MediaQuery.sizeOf(context).width),
+                  minimumWidth: (0.55 * MediaQuery.sizeOf(context).width),
                 ),
                 GridColumn(
                   columnName: 'isActive',
@@ -156,7 +156,10 @@ class _TipsScreenState extends State<TipsScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addTip,
-        child: Icon(Icons.add),
+        child: Icon(
+          Icons.add,
+          color: Color.fromARGB(255, 76, 175, 142),
+        ),
       ),
     );
   }
@@ -291,67 +294,71 @@ class _TipFormState extends State<TipForm> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.8,
-        child: AlertDialog(
-          title: Text(widget.tip == null ? 'Add Tip' : 'Edit Tip'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(labelText: 'Name'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a name';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    controller: _descriptionController,
-                    decoration: InputDecoration(labelText: 'Description'),
-                  ),
-                  CheckboxListTile(
-                    title: Text('Active'),
-                    value: _isActive,
-                    onChanged: (value) {
-                      setState(() {
-                        _isActive = value ?? false;
-                      });
-                    },
-                  ),
-                ],
-              ),
+        child: Container(
+      width: MediaQuery.of(context).size.width * 0.4,
+      height: MediaQuery.of(context).size.height * 0.5,
+      child: AlertDialog(
+        title: Text(widget.tip == null ? 'Add Tip' : 'Edit Tip'),
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment
+                  .stretch, // Ensures the children take up the full width
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(labelText: 'Name'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a name';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 16), // Add some space between fields
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(labelText: 'Description'),
+                ),
+                SizedBox(height: 16), // Add some space between fields
+                CheckboxListTile(
+                  title: Text('Active'),
+                  value: _isActive,
+                  onChanged: (value) {
+                    setState(() {
+                      _isActive = value ?? false;
+                    });
+                  },
+                ),
+              ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  Tip newTip = Tip(
-                    id: widget.tip?.id ?? 0,
-                    name: _nameController.text,
-                    description: _descriptionController.text,
-                    isActive: _isActive,
-                  );
-                  await widget.onSubmit(newTip);
-                }
-              },
-              child: Text('Save'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cancel'),
-            ),
-          ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                Tip newTip = Tip(
+                  id: widget.tip?.id ?? 0,
+                  name: _nameController.text,
+                  description: _descriptionController.text,
+                  isActive: _isActive,
+                );
+                await widget.onSubmit(newTip);
+              }
+            },
+            child: Text('Save'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text('Cancel'),
+          ),
+        ],
       ),
-    );
+    ));
   }
 }

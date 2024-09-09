@@ -333,8 +333,8 @@ class _ServiceFormState extends State<ServiceForm> {
   Widget build(BuildContext context) {
     return Dialog(
       child: Container(
-        width: MediaQuery.of(context).size.width *
-            0.8, // Adjust the width as needed
+        width: MediaQuery.of(context).size.width * 0.5,
+        height: MediaQuery.of(context).size.height * 0.65,
         child: AlertDialog(
           title: Text(widget.service == null ? 'Add Service' : 'Edit Service'),
           content: Form(
@@ -380,6 +380,7 @@ class _ServiceFormState extends State<ServiceForm> {
                       return null;
                     },
                   ),
+                  SizedBox(height: 16), // Add some space between fields
                   Row(
                     children: [
                       Text('Available'),
