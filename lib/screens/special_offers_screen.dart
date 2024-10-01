@@ -158,7 +158,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                     alignment: Alignment.center,
                     child: Text('Description', textAlign: TextAlign.center),
                   ),
-                  minimumWidth: (0.2 * MediaQuery.of(context).size.width),
+                  minimumWidth: (0.3 * MediaQuery.of(context).size.width),
                 ),
                 GridColumn(
                   columnName: 'isActive',
@@ -167,7 +167,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                     alignment: Alignment.center,
                     child: Text('Active', textAlign: TextAlign.center),
                   ),
-                  minimumWidth: (0.2 * MediaQuery.of(context).size.width),
+                  minimumWidth: (0.1 * MediaQuery.of(context).size.width),
                 ),
                 GridColumn(
                   columnName: 'offerExpirationDate',
