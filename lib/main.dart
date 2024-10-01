@@ -1,8 +1,9 @@
-import 'package:ewellness_desktop_app/screens/appointments_screen.dart';
-import 'package:ewellness_desktop_app/screens/service_categories.dart';
-import 'package:ewellness_desktop_app/screens/special_offers_screen.dart';
-import 'package:ewellness_desktop_app/screens/stats_screen.dart';
 import 'package:flutter/material.dart';
+
+import 'screens/appointments_screen.dart';
+import 'screens/service_categories.dart';
+import 'screens/special_offers_screen.dart';
+import 'screens/stats_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/clients_screen.dart';
 import 'screens/payments_screen.dart';
@@ -26,6 +27,9 @@ class MyApp extends StatelessWidget {
 }
 
 class WelcomeScreen extends StatelessWidget {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,21 +55,77 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 30),
+            // Add username input field
+            Container(
+              width: MediaQuery.of(context).size.width *
+                  0.5, // 50% of screen width
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                color: Colors.white,
+              ),
+              child: TextField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(8.0), // Rounded corners for input
+                    borderSide: BorderSide.none, // No border line
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            // Add password input field
+            Container(
+              width: MediaQuery.of(context).size.width *
+                  0.5, // 50% of screen width
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                color: Colors.white,
+              ),
+              child: TextField(
+                controller: passwordController,
+                obscureText: true, // Mask the password input
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(8.0), // Rounded corners for input
+                    borderSide: BorderSide.none, // No border line
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HomeScreen(),
-                  ),
-                );
+                // Check username and password
+                if (usernameController.text == 'desktop' &&
+                    passwordController.text == 'test') {
+                  // Navigate to HomeScreen if credentials are correct
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomeScreen(),
+                    ),
+                  );
+                } else {
+                  // Show error message if credentials are incorrect
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Invalid username or password'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Color.fromARGB(255, 76, 175, 142),
               ),
               child: Text(
-                'Continue',
+                'Login',
                 style: TextStyle(
                   color: Color.fromARGB(255, 76, 175, 142),
                 ),
