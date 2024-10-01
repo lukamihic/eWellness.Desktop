@@ -1,3 +1,7 @@
+import 'package:ewellness_desktop_app/screens/appointments_screen.dart';
+import 'package:ewellness_desktop_app/screens/service_categories.dart';
+import 'package:ewellness_desktop_app/screens/special_offers_screen.dart';
+import 'package:ewellness_desktop_app/screens/stats_screen.dart';
 import 'package:flutter/material.dart';
 import 'screens/services_screen.dart';
 import 'screens/clients_screen.dart';
@@ -87,6 +91,10 @@ class _HomeScreenState extends State<HomeScreen> {
     ClientsScreen(),
     PaymentsScreen(),
     TipsScreen(),
+    ServiceCategoriesScreen(),
+    AppointmentScreen(),
+    DiscountScreen(),
+    StatsScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -126,6 +134,26 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.tips_and_updates),
             label: 'Tips',
+            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: 'Service Categories',
+            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'Appointments',
+            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.discount),
+            label: 'Discounts',
+            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.query_stats),
+            label: 'Stats',
             backgroundColor: const Color.fromARGB(255, 76, 175, 142),
           ),
         ],

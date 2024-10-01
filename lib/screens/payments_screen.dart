@@ -59,11 +59,11 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                 GridColumn(
                     columnName: 'paymentMethod',
                     label: Text('Payment Method', textAlign: TextAlign.center),
-                    minimumWidth: (0.4 * MediaQuery.sizeOf(context).width)),
+                    minimumWidth: (0.45 * MediaQuery.sizeOf(context).width)),
                 GridColumn(
                     columnName: 'date',
                     label: Text('date', textAlign: TextAlign.center),
-                    minimumWidth: (0.2 * MediaQuery.sizeOf(context).width)),
+                    minimumWidth: (0.35 * MediaQuery.sizeOf(context).width)),
               ],
             ),
     );

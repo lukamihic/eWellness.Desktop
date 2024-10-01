@@ -55,11 +55,11 @@ class _ClientsScreenState extends State<ClientsScreen> {
                 GridColumn(
                     columnName: 'name',
                     label: Text('Name', textAlign: TextAlign.center),
-                    minimumWidth: (0.3 * MediaQuery.sizeOf(context).width)),
+                    minimumWidth: (0.45 * MediaQuery.sizeOf(context).width)),
                 GridColumn(
                     columnName: 'email',
                     label: Text('e-mail', textAlign: TextAlign.center),
-                    minimumWidth: (0.3 * MediaQuery.sizeOf(context).width)),
+                    minimumWidth: (0.35 * MediaQuery.sizeOf(context).width)),
                 GridColumn(
                     columnName: 'isMember',
                     label: Text('Member', textAlign: TextAlign.center),
@@ -76,14 +76,14 @@ class Client {
   final int id;
   final String name;
   final String email;
-  final String isMember;
+  final bool? isMember;
 
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
       json['id'],
       json['user']?['name'] ?? 'Unknown',
       json['user']?['email'] ?? 'Unknown',
-      json['isMember'] ? 'YES' : 'NO',
+      json['isMember'],
     );
   }
 }
@@ -95,8 +95,8 @@ class ClientDataSource extends DataGridSource {
               // DataGridCell<int>(columnName: 'id', value: client.id),
               DataGridCell<String>(columnName: 'name', value: client.name),
               DataGridCell<String>(columnName: 'email', value: client.email),
-              DataGridCell<String>(
-                  columnName: 'isMember', value: client.isMember),
+              DataGridCell<bool>(
+                  columnName: 'isMember', value: client.isMember ?? false),
             ]))
         .toList();
   }
@@ -122,7 +122,9 @@ class ClientDataSource extends DataGridSource {
       Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        child: Text(row.getCells()[2].value),
+        child: (row.getCells()[2].value as bool)
+            ? Icon(Icons.check, color: Colors.green)
+            : Icon(Icons.close, color: Colors.red),
       ),
     ]);
   }
