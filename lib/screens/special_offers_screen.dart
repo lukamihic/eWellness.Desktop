@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +15,7 @@ class DiscountScreen extends StatefulWidget {
 class _DiscountScreenState extends State<DiscountScreen> {
   List<SpecialOffer> specialOffers = [];
   late SpecialOfferDataSource specialOfferDataSource;
+  String token = '';
 
   @override
   void initState() {
@@ -21,8 +24,28 @@ class _DiscountScreenState extends State<DiscountScreen> {
   }
 
   fetchSpecialOffers() async {
+    final Uri fullApiUrl = Uri.parse(config.apiUri + '/users/login');
+
+    final Map<String, String> body = {
+      'email': 'desktop',
+      'password': 'test',
+    };
+
+    final responseLogin = await http.post(
+      fullApiUrl,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8'
+      },
+      body: jsonEncode(body),
+    );
+
+    if (responseLogin.statusCode == 200) {
+      token = responseLogin.body.toString();
+    } else {
+      throw Exception('Failed to fetch user.');
+    }
     final response =
-        await http.get(Uri.parse('${config.apiUri}/specialOffers'));
+        await http.get(Uri.parse('${config.apiUri}/specialOffers'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
     if (response.statusCode == 200) {
       setState(() {
         specialOffers = (json.decode(response.body) as List)
@@ -62,7 +85,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
     if (newSpecialOffer != null) {
       final response = await http.post(
         Uri.parse('${config.apiUri}/specialOffers'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
         body: json.encode(newSpecialOffer.toJson()),
       );
 
@@ -94,7 +117,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
     if (updatedOffer != null) {
       final response = await http.put(
         Uri.parse('${config.apiUri}/specialOffers/${updatedOffer.id}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
         body: json.encode(updatedOffer.toJson()),
       );
 
@@ -115,6 +138,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
   void _deleteSpecialOffer(int offerId) async {
     final response = await http.delete(
       Uri.parse('${config.apiUri}/specialOffers/$offerId'),
+      headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token}
     );
     if (response.statusCode == 200) {
       fetchSpecialOffers();

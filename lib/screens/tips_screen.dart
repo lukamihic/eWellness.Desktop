@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:http/http.dart' as http;
@@ -12,7 +14,9 @@ class TipsScreen extends StatefulWidget {
 class _TipsScreenState extends State<TipsScreen> {
   List<Tip> tips = [];
   late TipDataSource tipDataSource;
-
+  String token = '';
+static const apiUrl =
+      String.fromEnvironment('API_URI', defaultValue: config.apiUri);
   @override
   void initState() {
     super.initState();
@@ -20,8 +24,29 @@ class _TipsScreenState extends State<TipsScreen> {
   }
 
   fetchTips() async {
+    final Uri fullApiUrl = Uri.parse(apiUrl + '/users/login');
+
+    final Map<String, String> body = {
+      'email': 'desktop',
+      'password': 'test',
+    };
+
+    final responseLogin = await http.post(
+      fullApiUrl,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8'
+      },
+      body: jsonEncode(body),
+    );
+
+    if (responseLogin.statusCode == 200) {
+      token = responseLogin.body.toString();
+    } else {
+      throw Exception('Failed to fetch user.');
+    }
+
     final response =
-        await http.get(Uri.parse('http://localhost:5000/api/tips'));
+        await http.get(Uri.parse(apiUrl + '/tips'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
     if (response.statusCode == 200) {
       setState(() {
         tips = (json.decode(response.body) as List)
@@ -45,8 +70,8 @@ class _TipsScreenState extends State<TipsScreen> {
         return TipForm(
           onSubmit: (tip) async {
             final response = await http.post(
-              Uri.parse('http://localhost:5000/api/tips'),
-              headers: {'Content-Type': 'application/json'},
+              Uri.parse(apiUrl + '/tips'),
+              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
               body: jsonEncode(tip.toJson()),
             );
             if (response.statusCode.toString().startsWith('2')) {
@@ -75,8 +100,8 @@ class _TipsScreenState extends State<TipsScreen> {
           tip: tip,
           onSubmit: (updatedTip) async {
             final response = await http.put(
-              Uri.parse('http://localhost:5000/api/tips/${updatedTip.id}'),
-              headers: {'Content-Type': 'application/json'},
+              Uri.parse(apiUrl + '/tips/${updatedTip.id}'),
+              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
               body: jsonEncode(updatedTip.toJson()),
             );
             if (response.statusCode == 200) {
@@ -100,7 +125,7 @@ class _TipsScreenState extends State<TipsScreen> {
   void _deleteTip(int id) async {
     const apiUrl =
         String.fromEnvironment('API_URI', defaultValue: config.apiUri);
-    final response = await http.get(Uri.parse('${apiUrl}/tips/$id'));
+    final response = await http.get(Uri.parse('${apiUrl}/tips/$id'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
     if (response.statusCode == 200) {
       fetchTips();
       ScaffoldMessenger.of(context).showSnackBar(

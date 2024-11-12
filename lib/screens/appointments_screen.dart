@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:http/http.dart' as http;
@@ -12,6 +14,7 @@ class AppointmentScreen extends StatefulWidget {
 class _AppointmentScreenState extends State<AppointmentScreen> {
   List<Appointment> appointments = [];
   late AppointmentDataSource appointmentDataSource;
+  String token = '';
 
   @override
   void initState() {
@@ -20,7 +23,29 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
   }
 
   fetchAppointments() async {
-    final response = await http.get(Uri.parse('${config.apiUri}/appointments'));
+    final Uri fullApiUrl = Uri.parse(config.apiUri + '/users/login');
+
+    final Map<String, String> body = {
+      'email': 'desktop',
+      'password': 'test',
+    };
+
+    final responseLogin = await http.post(
+      fullApiUrl,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        HttpHeaders.authorizationHeader: 'Bearer ' + token
+      },
+      body: jsonEncode(body),
+    );
+
+    if (responseLogin.statusCode == 200) {
+      token = responseLogin.body.toString();
+    } else {
+      throw Exception('Failed to fetch user.');
+    }
+
+    final response = await http.get(Uri.parse('${config.apiUri}/appointments'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
     if (response.statusCode == 200) {
       setState(() {
         appointments = (json.decode(response.body) as List)
@@ -67,7 +92,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     if (newAppointment != null) {
       final response = await http.post(
         Uri.parse('${config.apiUri}/appointments'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
         body: json.encode(newAppointment.toJson()),
       );
 
@@ -99,7 +124,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     if (updatedAppointment != null) {
       final response = await http.put(
         Uri.parse('${config.apiUri}/appointments/${updatedAppointment.id}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
         body: json.encode(updatedAppointment.toJson()),
       );
 
@@ -120,6 +145,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
   void _deleteAppointment(int appointmentId) async {
     final response = await http.delete(
       Uri.parse('${config.apiUri}/appointments/$appointmentId'),
+      headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token}
     );
     if (response.statusCode == 200) {
       fetchAppointments();

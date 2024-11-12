@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +15,9 @@ class ServiceCategoriesScreen extends StatefulWidget {
 class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
   late ServiceDataSource serviceDataSource;
   List<ServiceCategory> serviceCategories = [];
+  static const apiUrl =
+      String.fromEnvironment('API_URI', defaultValue: config.apiUri);
+  String token = '';
 
   @override
   void initState() {
@@ -21,8 +26,29 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
   }
 
   fetchServiceCategories() async {
+    final Uri fullApiUrl = Uri.parse(apiUrl + '/users/login');
+
+    final Map<String, String> body = {
+      'email': 'desktop',
+      'password': 'test',
+    };
+
+    final responseLogin = await http.post(
+      fullApiUrl,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8'
+      },
+      body: jsonEncode(body),
+    );
+
+    if (responseLogin.statusCode == 200) {
+      token = responseLogin.body.toString();
+    } else {
+      throw Exception('Failed to fetch user.');
+    }
+
     final response = await http
-        .get(Uri.parse('http://localhost:5000/api/servicecategories'));
+        .get(Uri.parse(apiUrl + '/servicecategories'), headers:{HttpHeaders.authorizationHeader: 'Bearer ' + token});
     if (response.statusCode == 200) {
       setState(() {
         serviceCategories = (json.decode(response.body) as List)
@@ -46,8 +72,8 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
         return ServiceCategoryForm(
           onSubmit: (service) async {
             final response = await http.post(
-              Uri.parse('http://localhost:5000/api/servicecategories'),
-              headers: {'Content-Type': 'application/json'},
+              Uri.parse(apiUrl + '/servicecategories'),
+              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer '+ token},
               body: jsonEncode(service.toJson()),
             );
             if (response.statusCode.toString().startsWith('2')) {
@@ -77,8 +103,8 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
           onSubmit: (updatedService) async {
             final response = await http.put(
               Uri.parse(
-                  'http://localhost:5000/api/servicecategories/${updatedService.id}'),
-              headers: {'Content-Type': 'application/json'},
+                  apiUrl + '/servicecategories/${updatedService.id}'),
+              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer '+ token},
               body: jsonEncode(updatedService.toJson()),
             );
             if (response.statusCode == 200) {
@@ -97,7 +123,7 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
     const apiUrl =
         String.fromEnvironment('API_URI', defaultValue: config.apiUri);
     final response =
-        await http.delete(Uri.parse('$apiUrl/servicecategories/$serviceId'));
+        await http.delete(Uri.parse('$apiUrl/servicecategories/$serviceId'),headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
     if (response.statusCode == 200) {
       fetchServiceCategories();
       ScaffoldMessenger.of(context).showSnackBar(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:http/http.dart' as http;
@@ -12,6 +14,7 @@ class PaymentsScreen extends StatefulWidget {
 class _PaymentsScreenState extends State<PaymentsScreen> {
   List<Payment> payments = [];
   late PaymentDataSource paymentDataSource;
+  String token = '';
 
   @override
   void initState() {
@@ -22,7 +25,27 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   fetchPayments() async {
     const apiUrl =
         String.fromEnvironment('API_URI', defaultValue: config.apiUri);
-    final response = await http.get(Uri.parse('${apiUrl}/payments'));
+    final Uri fullApiUrl = Uri.parse(apiUrl + '/users/login');
+
+    final Map<String, String> body = {
+      'email': 'desktop',
+      'password': 'test',
+    };
+
+    final responseLogin = await http.post(
+      fullApiUrl,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8'
+      },
+      body: jsonEncode(body),
+    );
+
+    if (responseLogin.statusCode == 200) {
+      token = responseLogin.body.toString();
+    } else {
+      throw Exception('Failed to fetch user.');
+    }
+    final response = await http.get(Uri.parse('${apiUrl}/payments'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
     if (response.statusCode == 200) {
       setState(() {
         payments = (json.decode(response.body) as List)
