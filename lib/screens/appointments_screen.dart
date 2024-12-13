@@ -122,10 +122,11 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     );
 
     if (updatedAppointment != null) {
+      updatedAppointment.employeeId = 1;
       final response = await http.put(
         Uri.parse('${config.apiUri}/appointments/${updatedAppointment.id}'),
         headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
-        body: json.encode(updatedAppointment.toJson()),
+        body: json.encode(updatedAppointment.toPutJson()),
       );
 
       if (response.statusCode == 200) {
@@ -240,7 +241,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         onPressed: _addAppointment,
         child: Icon(
           Icons.add,
-          color: Colors.white,
+          color: Colors.teal,
         ),
       ),
     );
@@ -317,6 +318,23 @@ class Appointment {
       'status': status,
       'totalPrice': totalPrice,
       'name': name,
+    };
+  }
+
+  Map<String, dynamic> toPutJson() {
+    return {
+      'id': id,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+      'isDeleted': isDeleted,
+      'clientId': clientId,
+      'employeeId': employeeId,
+      'serviceId': serviceId,
+      'startTime': startTime.toIso8601String(),
+      'endTime': endTime.toIso8601String(),
+      'notes': notes,
+      'status': status,
+      'totalPrice': totalPrice
     };
   }
 }

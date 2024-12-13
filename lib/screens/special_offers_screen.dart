@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config.dart' as config show apiUri;
@@ -14,7 +13,6 @@ class DiscountScreen extends StatefulWidget {
 
 class _DiscountScreenState extends State<DiscountScreen> {
   List<SpecialOffer> specialOffers = [];
-  late SpecialOfferDataSource specialOfferDataSource;
   String token = '';
 
   @override
@@ -44,18 +42,17 @@ class _DiscountScreenState extends State<DiscountScreen> {
     } else {
       throw Exception('Failed to fetch user.');
     }
-    final response =
-        await http.get(Uri.parse('${config.apiUri}/specialOffers'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
+
+    final response = await http.get(
+      Uri.parse('${config.apiUri}/specialOffers'),
+      headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token},
+    );
+
     if (response.statusCode == 200) {
       setState(() {
         specialOffers = (json.decode(response.body) as List)
             .map((data) => SpecialOffer.fromJson(data))
             .toList();
-        specialOfferDataSource = SpecialOfferDataSource(
-          specialOffers: specialOffers,
-          onEdit: _editSpecialOffer,
-          onDelete: _deleteSpecialOffer,
-        );
       });
     } else {
       throw Exception('Failed to load special offers');
@@ -63,82 +60,168 @@ class _DiscountScreenState extends State<DiscountScreen> {
   }
 
   void _addSpecialOffer() async {
-    final newSpecialOffer = await showDialog<SpecialOffer>(
+    await showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return SpecialOfferDialog(
-          specialOffer: SpecialOffer(
-            id: 0,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-            isDeleted: false,
-            name: '',
-            description: '',
-            isActive: false,
-            offerExpirationDate: DateTime.now().add(Duration(days: 30)),
+      builder: (context) {
+        String name = '';
+        String description = '';
+        String expirationDate = '';
+
+        return AlertDialog(
+          title: Text('Add Special Offer'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(labelText: 'Name'),
+                onChanged: (value) {
+                  name = value;
+                },
+              ),
+              TextField(
+                decoration: InputDecoration(labelText: 'Description'),
+                onChanged: (value) {
+                  description = value;
+                },
+              ),
+              TextField(
+                decoration: InputDecoration(labelText: 'Expiration Date (yyyy-MM-dd)'),
+                onChanged: (value) {
+                  expirationDate = value;
+                },
+              ),
+            ],
           ),
-          isEdit: false,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newOffer = SpecialOffer(
+                  id: 0,
+                  createdAt: DateTime.now(),
+                  updatedAt: DateTime.now(),
+                  isDeleted: false,
+                  name: name,
+                  description: description,
+                  isActive: true,
+                  offerExpirationDate: DateTime.parse(expirationDate),
+                );
+
+                final response = await http.post(
+                  Uri.parse('${config.apiUri}/specialOffers'),
+                  headers: {
+                    HttpHeaders.authorizationHeader: 'Bearer ' + token,
+                    'Content-Type': 'application/json; charset=UTF-8',
+                  },
+                  body: jsonEncode(newOffer.toJson()),
+                );
+
+                if (response.statusCode == 200) {
+                  fetchSpecialOffers();
+                  Navigator.pop(context);
+                } else {
+                  throw Exception('Failed to add special offer');
+                }
+              },
+              child: Text('Save'),
+            ),
+          ],
         );
       },
     );
-
-    if (newSpecialOffer != null) {
-      final response = await http.post(
-        Uri.parse('${config.apiUri}/specialOffers'),
-        headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
-        body: json.encode(newSpecialOffer.toJson()),
-      );
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        fetchSpecialOffers();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Special offer added successfully!'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      } else {
-        throw Exception('Failed to add special offer');
-      }
-    }
   }
 
   void _editSpecialOffer(SpecialOffer offer) async {
-    final updatedOffer = await showDialog<SpecialOffer>(
+    await showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return SpecialOfferDialog(
-          specialOffer: offer,
-          isEdit: true,
+      builder: (context) {
+        String name = offer.name;
+        String description = offer.description ?? '';
+        String expirationDate =
+            DateFormat('yyyy-MM-dd').format(offer.offerExpirationDate);
+
+        return AlertDialog(
+          title: Text('Edit Special Offer'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: InputDecoration(labelText: 'Name'),
+                controller: TextEditingController(text: name),
+                onChanged: (value) {
+                  name = value;
+                },
+              ),
+              TextField(
+                decoration: InputDecoration(labelText: 'Description'),
+                controller: TextEditingController(text: description),
+                onChanged: (value) {
+                  description = value;
+                },
+              ),
+              TextField(
+                decoration: InputDecoration(labelText: 'Expiration Date (yyyy-MM-dd)'),
+                controller: TextEditingController(text: expirationDate),
+                onChanged: (value) {
+                  expirationDate = value;
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final updatedOffer = SpecialOffer(
+                  id: offer.id,
+                  createdAt: offer.createdAt,
+                  updatedAt: DateTime.now(),
+                  isDeleted: offer.isDeleted,
+                  name: name,
+                  description: description,
+                  isActive: offer.isActive,
+                  offerExpirationDate: DateTime.parse(expirationDate),
+                );
+
+                final response = await http.put(
+                  Uri.parse('${config.apiUri}/specialOffers/${offer.id}'),
+                  headers: {
+                    HttpHeaders.authorizationHeader: 'Bearer ' + token,
+                    'Content-Type': 'application/json; charset=UTF-8',
+                  },
+                  body: jsonEncode(updatedOffer.toJson()),
+                );
+
+                if (response.statusCode == 200) {
+                  fetchSpecialOffers();
+                  Navigator.pop(context);
+                } else {
+                  throw Exception('Failed to update special offer');
+                }
+              },
+              child: Text('Save'),
+            ),
+          ],
         );
       },
     );
-
-    if (updatedOffer != null) {
-      final response = await http.put(
-        Uri.parse('${config.apiUri}/specialOffers/${updatedOffer.id}'),
-        headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
-        body: json.encode(updatedOffer.toJson()),
-      );
-
-      if (response.statusCode == 200) {
-        fetchSpecialOffers();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Special offer updated successfully!'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      } else {
-        throw Exception('Failed to update special offer');
-      }
-    }
   }
+
 
   void _deleteSpecialOffer(int offerId) async {
     final response = await http.delete(
       Uri.parse('${config.apiUri}/specialOffers/$offerId'),
-      headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token}
+      headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token},
     );
     if (response.statusCode == 200) {
       fetchSpecialOffers();
@@ -163,59 +246,76 @@ class _DiscountScreenState extends State<DiscountScreen> {
                 style: TextStyle(fontSize: 24, color: Colors.grey),
               ),
             )
-          : SfDataGrid(
-              source: specialOfferDataSource,
-              columns: [
-                GridColumn(
-                  columnName: 'name',
-                  label: Container(
-                    padding: EdgeInsets.all(8.0),
-                    alignment: Alignment.center,
-                    child: Text('Name', textAlign: TextAlign.center),
+          : GridView.builder(
+              padding: EdgeInsets.all(8.0),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
+                childAspectRatio: 4 / 5,
+              ),
+              itemCount: specialOffers.length,
+              itemBuilder: (context, index) {
+                final offer = specialOffers[index];
+                return Card(
+                  elevation: 4.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
-                  minimumWidth: (0.2 * MediaQuery.of(context).size.width),
-                ),
-                GridColumn(
-                  columnName: 'description',
-                  label: Container(
-                    padding: EdgeInsets.all(8.0),
-                    alignment: Alignment.center,
-                    child: Text('Description', textAlign: TextAlign.center),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(10.0)),
+                          child: Image.network(
+                            'https://static.vecteezy.com/system/resources/thumbnails/025/491/970/small_2x/relaxing-spa-treatment-women-enjoy-pampering-massage-therapy-indoors-generated-by-ai-free-photo.jpg',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              offer.name,
+                              style: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 4.0),
+                            Text(
+                              'Expires on: ${DateFormat('yyyy-MM-dd').format(offer.offerExpirationDate)}',
+                              style: TextStyle(fontSize: 14.0, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ButtonBar(
+                        alignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () => _editSpecialOffer(offer),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteSpecialOffer(offer.id),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  minimumWidth: (0.3 * MediaQuery.of(context).size.width),
-                ),
-                GridColumn(
-                  columnName: 'isActive',
-                  label: Container(
-                    padding: EdgeInsets.all(8.0),
-                    alignment: Alignment.center,
-                    child: Text('Active', textAlign: TextAlign.center),
-                  ),
-                  minimumWidth: (0.1 * MediaQuery.of(context).size.width),
-                ),
-                GridColumn(
-                  columnName: 'offerExpirationDate',
-                  label: Container(
-                    padding: EdgeInsets.all(8.0),
-                    alignment: Alignment.center,
-                    child: Text('Expiration Date', textAlign: TextAlign.center),
-                  ),
-                  minimumWidth: (0.2 * MediaQuery.of(context).size.width),
-                ),
-                GridColumn(
-                  columnName: 'actions',
-                  label: Container(
-                    padding: EdgeInsets.all(8.0),
-                    alignment: Alignment.center,
-                    child: Text('Actions', textAlign: TextAlign.center),
-                  ),
-                  minimumWidth: (0.2 * MediaQuery.of(context).size.width),
-                ),
-              ],
+                );
+              },
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addSpecialOffer,
-        child: Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: Colors.teal),
       ),
     );
   }
@@ -266,149 +366,5 @@ class SpecialOffer {
       'isActive': isActive,
       'offerExpirationDate': offerExpirationDate.toIso8601String(),
     };
-  }
-}
-
-class SpecialOfferDataSource extends DataGridSource {
-  SpecialOfferDataSource({
-    required this.specialOffers,
-    required this.onEdit,
-    required this.onDelete,
-  }) {
-    dataGridRows = specialOffers.map<DataGridRow>((offer) {
-      return DataGridRow(cells: [
-        DataGridCell<String>(columnName: 'name', value: offer.name),
-        DataGridCell<String>(
-            columnName: 'description', value: offer.description),
-        DataGridCell<bool>(columnName: 'isActive', value: offer.isActive),
-        DataGridCell<String>(
-          columnName: 'offerExpirationDate',
-          value: DateFormat('yyyy-MM-dd').format(offer.offerExpirationDate),
-        ),
-        DataGridCell<Widget>(
-          columnName: 'actions',
-          value: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(Icons.edit),
-                onPressed: () => onEdit(offer),
-              ),
-              IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () => onDelete(offer.id),
-              ),
-            ],
-          ),
-        ),
-      ]);
-    }).toList();
-  }
-
-  List<DataGridRow> dataGridRows = [];
-  final List<SpecialOffer> specialOffers;
-  final Function(SpecialOffer) onEdit;
-  final Function(int) onDelete;
-
-  @override
-  List<DataGridRow> get rows => dataGridRows;
-
-  @override
-  DataGridRowAdapter buildRow(DataGridRow row) {
-    return DataGridRowAdapter(
-      cells: row.getCells().map<Widget>((cell) {
-        if (cell.columnName == 'actions') {
-          // Directly return the Row widget for actions
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              IconButton(
-                icon: Icon(Icons.edit),
-                onPressed: () => onEdit(
-                    row.getCells()[0].value), // Use the ID or appropriate value
-              ),
-              IconButton(
-                icon: Icon(Icons.delete),
-                onPressed: () => onDelete(
-                    row.getCells()[0].value), // Use the ID or appropriate value
-              ),
-            ],
-          );
-        }
-        return Container(
-          padding: EdgeInsets.all(8.0),
-          child: Text(cell.value.toString()), // Convert cell value to String
-        );
-      }).toList(),
-    );
-  }
-}
-
-class SpecialOfferDialog extends StatelessWidget {
-  final SpecialOffer specialOffer;
-  final bool isEdit;
-
-  SpecialOfferDialog({required this.specialOffer, required this.isEdit});
-
-  @override
-  Widget build(BuildContext context) {
-    final nameController = TextEditingController(text: specialOffer.name);
-    final descriptionController =
-        TextEditingController(text: specialOffer.description);
-    final expirationDateController = TextEditingController(
-      text: DateFormat('yyyy-MM-dd').format(specialOffer.offerExpirationDate),
-    );
-
-    return AlertDialog(
-      title: Text(isEdit ? 'Edit Special Offer' : 'Add Special Offer'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: nameController,
-            decoration: InputDecoration(labelText: 'Name'),
-          ),
-          TextField(
-            controller: descriptionController,
-            decoration: InputDecoration(labelText: 'Description'),
-          ),
-          TextField(
-            controller: expirationDateController,
-            decoration:
-                InputDecoration(labelText: 'Expiration Date (yyyy-MM-dd)'),
-          ),
-          CheckboxListTile(
-            title: Text('Active'),
-            value: specialOffer.isActive,
-            onChanged: (value) {
-              specialOffer.isActive = value ?? false;
-            },
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            final updatedOffer = SpecialOffer(
-              id: specialOffer.id,
-              createdAt: specialOffer.createdAt,
-              updatedAt: DateTime.now(),
-              isDeleted: false,
-              name: nameController.text,
-              description: descriptionController.text,
-              isActive: specialOffer.isActive,
-              offerExpirationDate:
-                  DateTime.parse(expirationDateController.text),
-            );
-            Navigator.of(context).pop(updatedOffer);
-          },
-          child: Text('Save'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel'),
-        ),
-      ],
-    );
   }
 }

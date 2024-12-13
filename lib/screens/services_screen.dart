@@ -23,7 +23,6 @@ static const apiUrl =
   void initState() {
     super.initState();
     fetchServices();
-    fetchServiceCategories();
   }
 
   fetchServices() async {
@@ -61,6 +60,7 @@ static const apiUrl =
           onDelete: _deleteService,
         );
       });
+      fetchServiceCategories();
     } else {
       throw Exception('Failed to load services');
     }
