@@ -1,0 +1,28 @@
+^C:\USERS\LUKA\SOURCE\REPOS\EWELLNESS.DESKTOP\BUILD\WINDOWS\X64\CMAKEFILES\2EE1358A2003509890DBF1EAD7E83CF2\FLUTTER_WINDOWS.DLL.RULE
+setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E env FLUTTER_ROOT=C:\flutter PROJECT_DIR=C:\Users\Luka\source\repos\eWellness.Desktop FLUTTER_ROOT=C:\flutter FLUTTER_EPHEMERAL_DIR=C:\Users\Luka\source\repos\eWellness.Desktop\windows\flutter\ephemeral PROJECT_DIR=C:\Users\Luka\source\repos\eWellness.Desktop FLUTTER_TARGET=lib\main.dart DART_OBFUSCATION=false TRACK_WIDGET_CREATION=true TREE_SHAKE_ICONS=false PACKAGE_CONFIG=C:\Users\Luka\source\repos\eWellness.Desktop\.dart_tool\package_config.json C:/flutter/packages/flutter_tools/bin/tool_backend.bat windows-x64 Debug
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\LUKA\SOURCE\REPOS\EWELLNESS.DESKTOP\BUILD\WINDOWS\X64\CMAKEFILES\1AA24B4C35D77AFF59B4F2EAE70A1C3B\FLUTTER_ASSEMBLE.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^C:\USERS\LUKA\SOURCE\REPOS\EWELLNESS.DESKTOP\WINDOWS\FLUTTER\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Luka/source/repos/eWellness.Desktop/windows -BC:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64 --check-stamp-file C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/flutter/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

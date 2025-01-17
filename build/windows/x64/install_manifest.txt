@@ -1,0 +1,12 @@
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/icudtl.dat
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/flutter_windows.dll
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/flutter_assets/AssetManifest.bin
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/flutter_assets/AssetManifest.json
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/flutter_assets/FontManifest.json
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/flutter_assets/fonts/MaterialIcons-Regular.otf
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/flutter_assets/kernel_blob.bin
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/flutter_assets/NOTICES.Z
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/flutter_assets/packages/syncfusion_flutter_datagrid/assets/font/FilterIcon.ttf
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/flutter_assets/packages/syncfusion_flutter_datagrid/assets/font/UnsortIcon.ttf
+C:/Users/Luka/source/repos/eWellness.Desktop/build/windows/x64/runner/Debug/data/flutter_assets/shaders/ink_sparkle.frag
