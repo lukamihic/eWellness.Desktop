@@ -7,6 +7,8 @@ import 'dart:convert';
 import '../config.dart' as config show apiUri;
 
 class ServiceCategoriesScreen extends StatefulWidget {
+  const ServiceCategoriesScreen({super.key});
+
   @override
   _ServiceCategoriesScreenState createState() =>
       _ServiceCategoriesScreenState();
@@ -26,7 +28,7 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
   }
 
   fetchServiceCategories() async {
-    final Uri fullApiUrl = Uri.parse(apiUrl + '/users/login');
+    final Uri fullApiUrl = Uri.parse('$apiUrl/users/login');
 
     final Map<String, String> body = {
       'email': 'desktop',
@@ -48,7 +50,7 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
     }
 
     final response = await http
-        .get(Uri.parse(apiUrl + '/servicecategories'), headers:{HttpHeaders.authorizationHeader: 'Bearer ' + token});
+        .get(Uri.parse('$apiUrl/servicecategories'), headers:{HttpHeaders.authorizationHeader: 'Bearer $token'});
     if (response.statusCode == 200) {
       setState(() {
         serviceCategories = (json.decode(response.body) as List)
@@ -72,15 +74,15 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
         return ServiceCategoryForm(
           onSubmit: (service) async {
             final response = await http.post(
-              Uri.parse(apiUrl + '/servicecategories'),
-              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer '+ token},
+              Uri.parse('$apiUrl/servicecategories'),
+              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer $token'},
               body: jsonEncode(service.toJson()),
             );
             if (response.statusCode.toString().startsWith('2')) {
               fetchServiceCategories();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Service category added successfully!'),
                   duration: Duration(seconds: 2),
                 ),
@@ -103,8 +105,8 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
           onSubmit: (updatedService) async {
             final response = await http.put(
               Uri.parse(
-                  apiUrl + '/servicecategories/${updatedService.id}'),
-              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer '+ token},
+                  '$apiUrl/servicecategories/${updatedService.id}'),
+              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer $token'},
               body: jsonEncode(updatedService.toJson()),
             );
             if (response.statusCode == 200) {
@@ -123,11 +125,11 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
     const apiUrl =
         String.fromEnvironment('API_URI', defaultValue: config.apiUri);
     final response =
-        await http.delete(Uri.parse('$apiUrl/servicecategories/$serviceId'),headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
+        await http.delete(Uri.parse('$apiUrl/servicecategories/$serviceId'),headers: {HttpHeaders.authorizationHeader: 'Bearer $token'});
     if (response.statusCode == 200) {
       fetchServiceCategories();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Service category deleted successfully!'),
           duration: Duration(seconds: 2),
         ),
@@ -141,7 +143,7 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: serviceCategories.isEmpty
-          ? Center(
+          ? const Center(
               child: Text(
                 'No service categories yet',
                 style: TextStyle(fontSize: 24, color: Colors.grey),
@@ -155,22 +157,22 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
                     columns: [
                       GridColumn(
                         columnName: 'name',
-                        label: Text('Name', textAlign: TextAlign.center),
+                        label: const Text('Name', textAlign: TextAlign.center),
                         minimumWidth: 0.3 * MediaQuery.of(context).size.width,
                       ),
                       GridColumn(
                         columnName: 'description',
-                        label: Text('Description', textAlign: TextAlign.center),
+                        label: const Text('Description', textAlign: TextAlign.center),
                         minimumWidth: 0.4 * MediaQuery.of(context).size.width,
                       ),
                       GridColumn(
                         columnName: 'isActive',
-                        label: Text('Active', textAlign: TextAlign.center),
+                        label: const Text('Active', textAlign: TextAlign.center),
                         minimumWidth: 0.1 * MediaQuery.of(context).size.width,
                       ),
                       GridColumn(
                         columnName: 'actions',
-                        label: Text('Actions', textAlign: TextAlign.center),
+                        label: const Text('Actions', textAlign: TextAlign.center),
                         minimumWidth: 0.2 * MediaQuery.of(context).size.width,
                       ),
                     ],
@@ -180,7 +182,7 @@ class _ServiceCategoriesScreenState extends State<ServiceCategoriesScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addServiceCategory,
-        child: Icon(
+        child: const Icon(
           Icons.add,
           color: Color.fromARGB(255, 76, 175, 142),
         ),
@@ -240,11 +242,11 @@ class ServiceDataSource extends DataGridSource {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.edit),
+                        icon: const Icon(Icons.edit),
                         onPressed: () => onEdit(service),
                       ),
                       IconButton(
-                        icon: Icon(Icons.delete),
+                        icon: const Icon(Icons.delete),
                         onPressed: () => onDelete(service.id),
                       ),
                     ],
@@ -264,24 +266,24 @@ class ServiceDataSource extends DataGridSource {
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(cells: [
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: Text(row.getCells()[0].value),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: Text(row.getCells()[1].value),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: (row.getCells()[2].value as bool)
-            ? Icon(Icons.check, color: Colors.green)
-            : Icon(Icons.close, color: Colors.red),
+            ? const Icon(Icons.check, color: Colors.green)
+            : const Icon(Icons.close, color: Colors.red),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: row.getCells()[3].value, // This is already a Widget
       ),
@@ -293,7 +295,7 @@ class ServiceCategoryForm extends StatefulWidget {
   final ServiceCategory? serviceCategory;
   final Function(ServiceCategory) onSubmit;
 
-  ServiceCategoryForm({required this.onSubmit, this.serviceCategory});
+  const ServiceCategoryForm({super.key, required this.onSubmit, this.serviceCategory});
 
   @override
   _ServiceCategoryFormState createState() => _ServiceCategoryFormState();
@@ -318,7 +320,7 @@ class _ServiceCategoryFormState extends State<ServiceCategoryForm> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: Container(
+      child: SizedBox(
         width: MediaQuery.of(context).size.width * 0.5,
         height: MediaQuery.of(context).size.height * 0.65,
         child: AlertDialog(
@@ -333,7 +335,7 @@ class _ServiceCategoryFormState extends State<ServiceCategoryForm> {
                 children: [
                   TextFormField(
                     controller: _nameController,
-                    decoration: InputDecoration(labelText: 'Name'),
+                    decoration: const InputDecoration(labelText: 'Name'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a name';
@@ -343,12 +345,12 @@ class _ServiceCategoryFormState extends State<ServiceCategoryForm> {
                   ),
                   TextFormField(
                     controller: _descriptionController,
-                    decoration: InputDecoration(labelText: 'Description'),
+                    decoration: const InputDecoration(labelText: 'Description'),
                   ),
-                  SizedBox(height: 16), // Add some space between fields
+                  const SizedBox(height: 16), // Add some space between fields
                   Row(
                     children: [
-                      Text('Active'),
+                      const Text('Active'),
                       Switch(
                         value: _isActive,
                         onChanged: (bool value) {
@@ -376,13 +378,13 @@ class _ServiceCategoryFormState extends State<ServiceCategoryForm> {
                   widget.onSubmit(newServiceCategory);
                 }
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
           ],
         ),

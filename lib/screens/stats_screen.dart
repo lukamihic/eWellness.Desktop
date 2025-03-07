@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
+import '../config.dart' as config show apiUri;
 
 class AppointmentData {
   final String day;
@@ -16,6 +20,34 @@ class ProfitData {
 }
 
 class StatsScreen extends StatelessWidget {
+  const StatsScreen({super.key});
+
+  static const apiUrl =
+      String.fromEnvironment('API_URI', defaultValue: config.apiUri);
+
+  Future<void> _downloadPdfReport(BuildContext context) async {
+    const url = '$apiUrl/Appointments/report/pdf';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/report.pdf');
+        await file.writeAsBytes(response.bodyBytes);
+        print('PDF saved to: ${file.path}');
+        ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PDF saved to: ${file.path}!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      } else {
+        print('Failed to download report');
+      }
+    } catch (e) {
+      print('Error downloading report: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,7 +74,7 @@ class StatsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Card(
                       child: Padding(
@@ -61,7 +93,7 @@ class StatsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             // Data Grid Section
             Expanded(
               child: Card(
@@ -81,11 +113,18 @@ class StatsScreen extends StatelessWidget {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _downloadPdfReport(context),
+        backgroundColor: Colors.teal,
+        child: const Icon(Icons.insert_drive_file, color: Colors.white),
+      ),
     );
   }
 }
 
 class AppointmentChart extends StatelessWidget {
+  const AppointmentChart({super.key});
+
   @override
   Widget build(BuildContext context) {
     final data = [
@@ -97,7 +136,7 @@ class AppointmentChart extends StatelessWidget {
     ];
 
     return CustomPaint(
-      size: Size(double.infinity, 200), // Width & height for chart space
+      size: const Size(double.infinity, 200), // Width & height for chart space
       painter: BarChartPainter(data),
     );
   }
@@ -147,6 +186,8 @@ class BarChartPainter extends CustomPainter {
 }
 
 class ProfitChart extends StatelessWidget {
+  const ProfitChart({super.key});
+
   @override
   Widget build(BuildContext context) {
     final data = [
@@ -157,7 +198,7 @@ class ProfitChart extends StatelessWidget {
     ];
 
     return CustomPaint(
-      size: Size(double.infinity, 200), // Width & height for chart space
+      size: const Size(double.infinity, 200), // Width & height for chart space
       painter: LineChartPainter(data),
     );
   }
@@ -208,6 +249,8 @@ class LineChartPainter extends CustomPainter {
 }
 
 class AppointmentDataTable extends StatelessWidget {
+  const AppointmentDataTable({super.key});
+
   @override
   Widget build(BuildContext context) {
     final data = [

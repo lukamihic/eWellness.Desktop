@@ -7,6 +7,8 @@ import 'dart:convert';
 import '../config.dart' as config show apiUri;
 
 class TipsScreen extends StatefulWidget {
+  const TipsScreen({super.key});
+
   @override
   _TipsScreenState createState() => _TipsScreenState();
 }
@@ -24,7 +26,7 @@ static const apiUrl =
   }
 
   fetchTips() async {
-    final Uri fullApiUrl = Uri.parse(apiUrl + '/users/login');
+    final Uri fullApiUrl = Uri.parse('$apiUrl/users/login');
 
     final Map<String, String> body = {
       'email': 'desktop',
@@ -46,7 +48,7 @@ static const apiUrl =
     }
 
     final response =
-        await http.get(Uri.parse(apiUrl + '/tips'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
+        await http.get(Uri.parse('$apiUrl/tips'), headers: {HttpHeaders.authorizationHeader: 'Bearer $token'});
     if (response.statusCode == 200) {
       setState(() {
         tips = (json.decode(response.body) as List)
@@ -70,15 +72,15 @@ static const apiUrl =
         return TipForm(
           onSubmit: (tip) async {
             final response = await http.post(
-              Uri.parse(apiUrl + '/tips'),
-              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
+              Uri.parse('$apiUrl/tips'),
+              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer $token'},
               body: jsonEncode(tip.toJson()),
             );
             if (response.statusCode.toString().startsWith('2')) {
               fetchTips();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Tip added successfully!'),
                   duration: Duration(seconds: 2),
                 ),
@@ -100,15 +102,15 @@ static const apiUrl =
           tip: tip,
           onSubmit: (updatedTip) async {
             final response = await http.put(
-              Uri.parse(apiUrl + '/tips/${updatedTip.id}'),
-              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
+              Uri.parse('$apiUrl/tips/${updatedTip.id}'),
+              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer $token'},
               body: jsonEncode(updatedTip.toJson()),
             );
             if (response.statusCode == 200) {
               fetchTips();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Tip updated successfully!'),
                   duration: Duration(seconds: 2),
                 ),
@@ -125,11 +127,11 @@ static const apiUrl =
   void _deleteTip(int id) async {
     const apiUrl =
         String.fromEnvironment('API_URI', defaultValue: config.apiUri);
-    final response = await http.get(Uri.parse('${apiUrl}/tips/$id'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
+    final response = await http.get(Uri.parse('$apiUrl/tips/$id'), headers: {HttpHeaders.authorizationHeader: 'Bearer $token'});
     if (response.statusCode == 200) {
       fetchTips();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Tip deleted successfully!'),
           duration: Duration(seconds: 2),
         ),
@@ -143,7 +145,7 @@ static const apiUrl =
   Widget build(BuildContext context) {
     return Scaffold(
       body: tips.isEmpty
-          ? Center(
+          ? const Center(
               child: Text(
                 'No tips yet',
                 style: TextStyle(fontSize: 24, color: Colors.grey),
@@ -159,29 +161,29 @@ static const apiUrl =
                 // ),
                 GridColumn(
                   columnName: 'name',
-                  label: Text('Name', textAlign: TextAlign.center),
+                  label: const Text('Name', textAlign: TextAlign.center),
                   minimumWidth: (0.2 * MediaQuery.sizeOf(context).width),
                 ),
                 GridColumn(
                   columnName: 'description',
-                  label: Text('Description', textAlign: TextAlign.center),
+                  label: const Text('Description', textAlign: TextAlign.center),
                   minimumWidth: (0.55 * MediaQuery.sizeOf(context).width),
                 ),
                 GridColumn(
                   columnName: 'isActive',
-                  label: Text('Active', textAlign: TextAlign.center),
+                  label: const Text('Active', textAlign: TextAlign.center),
                   minimumWidth: (0.1 * MediaQuery.sizeOf(context).width),
                 ),
                 GridColumn(
                   columnName: 'actions',
-                  label: Text('Actions', textAlign: TextAlign.center),
+                  label: const Text('Actions', textAlign: TextAlign.center),
                   minimumWidth: (0.15 * MediaQuery.sizeOf(context).width),
                 ),
               ],
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addTip,
-        child: Icon(
+        child: const Icon(
           Icons.add,
           color: Color.fromARGB(255, 76, 175, 142),
         ),
@@ -241,11 +243,11 @@ class TipDataSource extends DataGridSource {
                 value: Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.edit),
+                      icon: const Icon(Icons.edit),
                       onPressed: () => onEdit(tip),
                     ),
                     IconButton(
-                      icon: Icon(Icons.delete),
+                      icon: const Icon(Icons.delete),
                       onPressed: () => onDelete(tip.id),
                     ),
                   ],
@@ -266,24 +268,24 @@ class TipDataSource extends DataGridSource {
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(cells: [
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: Text(row.getCells()[0].value),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: Text(row.getCells()[1].value),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: (row.getCells()[2].value as bool)
-            ? Icon(Icons.check, color: Colors.green)
-            : Icon(Icons.close, color: Colors.red),
+            ? const Icon(Icons.check, color: Colors.green)
+            : const Icon(Icons.close, color: Colors.red),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: row.getCells()[3].value,
       ),
@@ -295,7 +297,7 @@ class TipForm extends StatefulWidget {
   final Tip? tip;
   final Function(Tip) onSubmit;
 
-  TipForm({this.tip, required this.onSubmit});
+  const TipForm({super.key, this.tip, required this.onSubmit});
 
   @override
   _TipFormState createState() => _TipFormState();
@@ -319,7 +321,7 @@ class _TipFormState extends State<TipForm> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-        child: Container(
+        child: SizedBox(
       width: MediaQuery.of(context).size.width * 0.4,
       height: MediaQuery.of(context).size.height * 0.5,
       child: AlertDialog(
@@ -334,7 +336,7 @@ class _TipFormState extends State<TipForm> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: 'Name'),
+                  decoration: const InputDecoration(labelText: 'Name'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a name';
@@ -342,14 +344,14 @@ class _TipFormState extends State<TipForm> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16), // Add some space between fields
+                const SizedBox(height: 16), // Add some space between fields
                 TextFormField(
                   controller: _descriptionController,
-                  decoration: InputDecoration(labelText: 'Description'),
+                  decoration: const InputDecoration(labelText: 'Description'),
                 ),
-                SizedBox(height: 16), // Add some space between fields
+                const SizedBox(height: 16), // Add some space between fields
                 CheckboxListTile(
-                  title: Text('Active'),
+                  title: const Text('Active'),
                   value: _isActive,
                   onChanged: (value) {
                     setState(() {
@@ -374,13 +376,13 @@ class _TipFormState extends State<TipForm> {
                 await widget.onSubmit(newTip);
               }
             },
-            child: Text('Save'),
+            child: const Text('Save'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
         ],
       ),

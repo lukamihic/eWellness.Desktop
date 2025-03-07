@@ -7,6 +7,8 @@ import 'dart:convert';
 import '../config.dart' as config show apiUri;
 
 class AppointmentScreen extends StatefulWidget {
+  const AppointmentScreen({super.key});
+
   @override
   _AppointmentScreenState createState() => _AppointmentScreenState();
 }
@@ -15,6 +17,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
   List<Appointment> appointments = [];
   late AppointmentDataSource appointmentDataSource;
   String token = '';
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -22,8 +25,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     fetchAppointments();
   }
 
-  fetchAppointments() async {
-    final Uri fullApiUrl = Uri.parse(config.apiUri + '/users/login');
+  fetchAppointments({String query = ''}) async {
+    final Uri fullApiUrl = Uri.parse('${config.apiUri}/users/login');
 
     final Map<String, String> body = {
       'email': 'desktop',
@@ -34,7 +37,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
       fullApiUrl,
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
-        HttpHeaders.authorizationHeader: 'Bearer ' + token
+        HttpHeaders.authorizationHeader: 'Bearer $token'
       },
       body: jsonEncode(body),
     );
@@ -45,7 +48,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
       throw Exception('Failed to fetch user.');
     }
 
-    final response = await http.get(Uri.parse('${config.apiUri}/appointments'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
+    final response = await http.get(Uri.parse('${config.apiUri}/appointments?searchQuery=$query'), headers: {HttpHeaders.authorizationHeader: 'Bearer $token'});
     if (response.statusCode == 200) {
       setState(() {
         appointments = (json.decode(response.body) as List)
@@ -60,6 +63,11 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     } else {
       throw Exception('Failed to load appointments');
     }
+  }
+
+  void _onSearchChanged() {
+    // Call fetchServices every time the search input changes
+    fetchAppointments(query: searchController.text);
   }
 
   void _addAppointment() async {
@@ -78,7 +86,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
             serviceId: 0,
             serviceName: '',
             startTime: DateTime.now(),
-            endTime: DateTime.now().add(Duration(hours: 1)),
+            endTime: DateTime.now().add(const Duration(hours: 1)),
             notes: '',
             status: '',
             totalPrice: 0.0,
@@ -92,14 +100,14 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     if (newAppointment != null) {
       final response = await http.post(
         Uri.parse('${config.apiUri}/appointments'),
-        headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
+        headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer $token'},
         body: json.encode(newAppointment.toJson()),
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         fetchAppointments();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Appointment added successfully!'),
             duration: Duration(seconds: 2),
           ),
@@ -125,14 +133,14 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
       updatedAppointment.employeeId = 1;
       final response = await http.put(
         Uri.parse('${config.apiUri}/appointments/${updatedAppointment.id}'),
-        headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
+        headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer $token'},
         body: json.encode(updatedAppointment.toPutJson()),
       );
 
       if (response.statusCode == 200) {
         fetchAppointments();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Appointment updated successfully!'),
             duration: Duration(seconds: 2),
           ),
@@ -146,12 +154,12 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
   void _deleteAppointment(int appointmentId) async {
     final response = await http.delete(
       Uri.parse('${config.apiUri}/appointments/$appointmentId'),
-      headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token}
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $token'}
     );
     if (response.statusCode == 200) {
       fetchAppointments();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Appointment deleted successfully!'),
           duration: Duration(seconds: 2),
         ),
@@ -165,7 +173,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: appointments.isEmpty
-          ? Center(
+          ? const Center(
               child: Text(
                 'No appointments available',
                 style: TextStyle(fontSize: 24, color: Colors.grey),
@@ -173,6 +181,19 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
             )
           : Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: searchController,
+                    decoration: const InputDecoration(
+                      labelText: 'Search Appointments (enter client or service name)',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (query) {
+                      _onSearchChanged(); // Trigger search when typing
+                    },
+                  ),
+                ),
                 Expanded(
                   child: SfDataGrid(
                     source: appointmentDataSource,
@@ -180,10 +201,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       GridColumn(
                         columnName: 'service',
                         label: Container(
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           alignment: Alignment.center,
                           child:
-                              Text('Service', textAlign: TextAlign.center),
+                              const Text('Service', textAlign: TextAlign.center),
                         ),
                         minimumWidth:
                             (0.35 * MediaQuery.of(context).size.width),
@@ -191,10 +212,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       GridColumn(
                         columnName: 'status',
                         label: Container(
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           alignment: Alignment.center,
                           child:
-                              Text('Status', textAlign: TextAlign.center),
+                              const Text('Status', textAlign: TextAlign.center),
                         ),
                         minimumWidth:
                             (0.15 * MediaQuery.of(context).size.width),
@@ -202,9 +223,9 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       GridColumn(
                         columnName: 'totalPrice',
                         label: Container(
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           alignment: Alignment.center,
-                          child: Text('Total Price',
+                          child: const Text('Total Price',
                               textAlign: TextAlign.center),
                         ),
                         minimumWidth:
@@ -213,10 +234,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       GridColumn(
                         columnName: 'client',
                         label: Container(
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           alignment: Alignment.center,
                           child:
-                              Text('Client', textAlign: TextAlign.center),
+                              const Text('Client', textAlign: TextAlign.center),
                         ),
                         minimumWidth:
                             (0.2 * MediaQuery.of(context).size.width),
@@ -224,10 +245,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                       GridColumn(
                         columnName: 'actions',
                         label: Container(
-                          padding: EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(8.0),
                           alignment: Alignment.center,
                           child:
-                              Text('Actions', textAlign: TextAlign.center),
+                              const Text('Actions', textAlign: TextAlign.center),
                         ),
                         minimumWidth:
                             (0.15 * MediaQuery.of(context).size.width),
@@ -239,7 +260,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addAppointment,
-        child: Icon(
+        child: const Icon(
           Icons.add,
           color: Colors.teal,
         ),
@@ -360,11 +381,11 @@ class AppointmentDataSource extends DataGridSource {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                icon: Icon(Icons.edit),
+                icon: const Icon(Icons.edit),
                 onPressed: () => onEdit(appointment),
               ),
               IconButton(
-                icon: Icon(Icons.delete),
+                icon: const Icon(Icons.delete),
                 onPressed: () => onDelete(appointment.id),
               ),
             ],
@@ -385,27 +406,27 @@ class AppointmentDataSource extends DataGridSource {
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(cells: [
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: Text(row.getCells()[0].value),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: Text(row.getCells()[1].value),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: Text(row.getCells()[2].value.toString()),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: Text(row.getCells()[3].value),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: row.getCells()[4].value,
       ),
@@ -417,7 +438,7 @@ class AppointmentDialog extends StatefulWidget {
   final Appointment appointment;
   final bool isEdit;
 
-  AppointmentDialog({required this.appointment, required this.isEdit});
+  const AppointmentDialog({super.key, required this.appointment, required this.isEdit});
 
   @override
   _AppointmentDialogState createState() => _AppointmentDialogState();
@@ -488,38 +509,38 @@ class _AppointmentDialogState extends State<AppointmentDialog> {
             children: [
               TextFormField(
                 controller: _serviceNameController,
-                decoration: InputDecoration(labelText: 'Service Name'),
+                decoration: const InputDecoration(labelText: 'Service Name'),
                 validator: (value) =>
                     value!.isEmpty ? 'Please enter a service name' : null,
               ),
               TextFormField(
                 controller: _statusController,
-                decoration: InputDecoration(labelText: 'Status'),
+                decoration: const InputDecoration(labelText: 'Status'),
                 validator: (value) =>
                     value!.isEmpty ? 'Please enter the status' : null,
               ),
               TextFormField(
                 controller: _clientNameController,
-                decoration: InputDecoration(labelText: 'Client Name'),
+                decoration: const InputDecoration(labelText: 'Client Name'),
                 validator: (value) =>
                     value!.isEmpty ? 'Please enter the client name' : null,
               ),
               TextFormField(
                 controller: _totalPriceController,
-                decoration: InputDecoration(labelText: 'Total Price'),
+                decoration: const InputDecoration(labelText: 'Total Price'),
                 keyboardType: TextInputType.number,
                 validator: (value) =>
                     value!.isEmpty ? 'Please enter the total price' : null,
               ),
               TextFormField(
                 controller: _notesController,
-                decoration: InputDecoration(labelText: 'Notes'),
+                decoration: const InputDecoration(labelText: 'Notes'),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Row(
                 children: [
-                  Text('Start Time:'),
-                  SizedBox(width: 8),
+                  const Text('Start Time:'),
+                  const SizedBox(width: 8),
                   TextButton(
                     onPressed: () async {
                       final selectedDate = await showDateTimePicker(
@@ -537,8 +558,8 @@ class _AppointmentDialogState extends State<AppointmentDialog> {
               ),
               Row(
                 children: [
-                  Text('End Time:'),
-                  SizedBox(width: 8),
+                  const Text('End Time:'),
+                  const SizedBox(width: 8),
                   TextButton(
                     onPressed: () async {
                       final selectedDate = await showDateTimePicker(
@@ -561,7 +582,7 @@ class _AppointmentDialogState extends State<AppointmentDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: () {

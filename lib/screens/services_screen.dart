@@ -7,6 +7,8 @@ import 'dart:convert';
 import '../config.dart' as config show apiUri;
 
 class ServicesScreen extends StatefulWidget {
+  const ServicesScreen({super.key});
+
   @override
   _ServicesScreenState createState() => _ServicesScreenState();
 }
@@ -16,17 +18,19 @@ class _ServicesScreenState extends State<ServicesScreen> {
   late ServiceDataSource serviceDataSource;
   List<ServiceCategory> serviceCategories = [];
   String token = "";
+  TextEditingController searchController = TextEditingController();
 
-static const apiUrl =
+  static const apiUrl =
       String.fromEnvironment('API_URI', defaultValue: config.apiUri);
+
   @override
   void initState() {
     super.initState();
     fetchServices();
   }
 
-  fetchServices() async {
-    final Uri fullApiUrl = Uri.parse(apiUrl + '/users/login');
+  fetchServices({String query = ''}) async {
+    final Uri fullApiUrl = Uri.parse('$apiUrl/users/login');
 
     final Map<String, String> body = {
       'email': 'desktop',
@@ -47,8 +51,12 @@ static const apiUrl =
       throw Exception('Failed to fetch user.');
     }
 
-    final response =
-        await http.get(Uri.parse(apiUrl + '/services'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
+    // Update the URL to include the query parameter for search
+    final response = await http.get(
+      Uri.parse('$apiUrl/services?searchQuery=$query'),
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $token' },
+    );
+
     if (response.statusCode == 200) {
       setState(() {
         services = (json.decode(response.body) as List)
@@ -66,9 +74,14 @@ static const apiUrl =
     }
   }
 
+  void _onSearchChanged() {
+    // Call fetchServices every time the search input changes
+    fetchServices(query: searchController.text);
+  }
+
   fetchServiceCategories() async {
     final response = await http
-        .get(Uri.parse(apiUrl + '/servicecategories'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
+        .get(Uri.parse('$apiUrl/servicecategories'), headers: {HttpHeaders.authorizationHeader: 'Bearer $token'});
     if (response.statusCode == 200) {
       setState(() {
         serviceCategories = (json.decode(response.body) as List)
@@ -88,15 +101,15 @@ static const apiUrl =
           serviceCategories: serviceCategories,
           onSubmit: (service) async {
             final response = await http.post(
-              Uri.parse(apiUrl + '/services'),
-              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
+              Uri.parse('$apiUrl/services'),
+              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer $token'},
               body: jsonEncode(service.toJson()),
             );
             if (response.statusCode.toString().startsWith('2')) {
               fetchServices();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
+                const SnackBar(
                   content: Text('Service added successfully!'),
                   duration: Duration(seconds: 2),
                 ),
@@ -119,9 +132,8 @@ static const apiUrl =
           service: service,
           onSubmit: (updatedService) async {
             final response = await http.put(
-              Uri.parse(
-                  apiUrl + '/services/${updatedService.id}'),
-              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer ' + token},
+              Uri.parse('$apiUrl/services/${updatedService.id}'),
+              headers: {'Content-Type': 'application/json', HttpHeaders.authorizationHeader: 'Bearer $token'},
               body: jsonEncode(updatedService.toJson()),
             );
             if (response.statusCode == 200) {
@@ -137,13 +149,14 @@ static const apiUrl =
   }
 
   void _deleteService(int serviceId) async {
-    const apiUrl =
-        String.fromEnvironment('API_URI', defaultValue: config.apiUri);
-    final response = await http.get(Uri.parse('${apiUrl}/services/$serviceId'), headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token});
+    final response = await http.delete(
+      Uri.parse('$apiUrl/services/$serviceId'),
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
+    );
     if (response.statusCode == 200) {
       fetchServices();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Service deleted successfully!'),
           duration: Duration(seconds: 2),
         ),
@@ -157,7 +170,7 @@ static const apiUrl =
   Widget build(BuildContext context) {
     return Scaffold(
       body: services.isEmpty
-          ? Center(
+          ? const Center(
               child: Text(
                 'No services yet',
                 style: TextStyle(fontSize: 24, color: Colors.grey),
@@ -165,18 +178,31 @@ static const apiUrl =
             )
           : Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: searchController,
+                    decoration: const InputDecoration(
+                      labelText: 'Search Services',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (query) {
+                      _onSearchChanged(); // Trigger search when typing
+                    },
+                  ),
+                ),
                 Expanded(
                   child: SfDataGrid(
                     source: serviceDataSource,
                     columns: [
                       GridColumn(
                         columnName: 'name',
-                        label: Text('Name', textAlign: TextAlign.center),
+                        label: const Text('Name', textAlign: TextAlign.center),
                         minimumWidth: 0.7 * MediaQuery.sizeOf(context).width,
                       ),
                       GridColumn(
                         columnName: 'actions',
-                        label: Text('     Actions'),
+                        label: const Text('     Actions'),
                         minimumWidth: 0.3 * MediaQuery.sizeOf(context).width,
                       ),
                     ],
@@ -186,7 +212,7 @@ static const apiUrl =
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addService,
-        child: Icon(
+        child: const Icon(
           Icons.add,
           color: Color.fromARGB(255, 76, 175, 142),
         ),
@@ -272,20 +298,18 @@ class ServiceDataSource extends DataGridSource {
     dataGridRows = services
         .map<DataGridRow>((service) => DataGridRow(cells: [
               DataGridCell<String>(columnName: 'name', value: service.name),
-              DataGridCell<Widget>(
-                  columnName: 'actions',
-                  value: Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () => onEdit(service),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () => onDelete(service.id),
-                      ),
-                    ],
-                  )),
+              DataGridCell<Widget>(columnName: 'actions', value: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () => onEdit(service),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () => onDelete(service.id),
+                  ),
+                ],
+              )),
             ]))
         .toList();
   }
@@ -301,12 +325,12 @@ class ServiceDataSource extends DataGridSource {
   DataGridRowAdapter buildRow(DataGridRow row) {
     return DataGridRowAdapter(cells: [
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: Text(row.getCells()[0].value),
       ),
       Container(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         alignment: Alignment.center,
         child: row.getCells()[1].value,
       ),
@@ -319,7 +343,7 @@ class ServiceForm extends StatefulWidget {
   final Service? service;
   final Function(Service) onSubmit;
 
-  ServiceForm({
+  const ServiceForm({super.key, 
     required this.serviceCategories,
     required this.onSubmit,
     this.service,
@@ -357,132 +381,110 @@ class _ServiceFormState extends State<ServiceForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.5,
-        height: MediaQuery.of(context).size.height * 0.65,
-        child: AlertDialog(
-          title: Text(widget.service == null ? 'Add Service' : 'Edit Service'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(labelText: 'Name'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a name';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    controller: _descriptionController,
-                    decoration: InputDecoration(labelText: 'Description'),
-                  ),
-                  TextFormField(
-                    controller: _priceController,
-                    decoration: InputDecoration(labelText: 'Price'),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a price';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    controller: _durationController,
-                    decoration:
-                        InputDecoration(labelText: 'Duration (minutes)'),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a duration';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16), // Add some space between fields
-                  Row(
-                    children: [
-                      Text('Available'),
-                      Switch(
-                        value: _isAvailable,
-                        onChanged: (bool value) {
-                          setState(() {
-                            _isAvailable = value;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  DropdownButtonFormField<int>(
-                    value: _selectedCategoryId,
-                    decoration: InputDecoration(labelText: 'Category'),
-                    items: widget.serviceCategories.map((category) {
-                      return DropdownMenuItem<int>(
+    return AlertDialog(
+      title: Text(widget.service == null ? 'Add Service' : 'Edit Service'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a service name';
+                }
+                return null;
+              },
+            ),
+            TextFormField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(labelText: 'Description'),
+            ),
+            TextFormField(
+              controller: _priceController,
+              decoration: const InputDecoration(labelText: 'Price'),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a price';
+                }
+                return null;
+              },
+            ),
+            TextFormField(
+              controller: _durationController,
+              decoration: const InputDecoration(labelText: 'Duration (mins)'),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a duration';
+                }
+                return null;
+              },
+            ),
+            TextFormField(
+              controller: _imageUrlController,
+              decoration: const InputDecoration(labelText: 'Image URL'),
+            ),
+            CheckboxListTile(
+              title: const Text('Available'),
+              value: _isAvailable,
+              onChanged: (bool? value) {
+                setState(() {
+                  _isAvailable = value ?? false;
+                });
+              },
+            ),
+            DropdownButtonFormField<int>(
+              value: _selectedCategoryId,
+              decoration: const InputDecoration(labelText: 'Category'),
+              items: widget.serviceCategories
+                  .map((category) => DropdownMenuItem<int>(
                         value: category.id,
                         child: Text(category.name),
-                      );
-                    }).toList(),
-                    onChanged: (int? value) {
-                      setState(() {
-                        _selectedCategoryId = value;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Please select a category';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    controller: _imageUrlController,
-                    decoration: InputDecoration(labelText: 'Image URL'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  Service newService = Service(
-                    id: widget.service?.id ?? 0,
-                    name: _nameController.text,
-                    description: _descriptionController.text,
-                    price: double.parse(_priceController.text),
-                    duration: int.parse(_durationController.text),
-                    isAvailable: _isAvailable,
-                    imageUrl: _imageUrlController.text.isEmpty
-                        ? 'https://st4.depositphotos.com/14953852/24787/v/450/depositphotos_247872612-stock-illustration-no-image-available-icon-vector.jpg'
-                        : _imageUrlController.text,
-                    serviceCategoryId: _selectedCategoryId!,
-                    serviceCategoryName: widget.serviceCategories
-                        .firstWhere(
-                            (category) => category.id == _selectedCategoryId)
-                        .name,
-                  );
-                  widget.onSubmit(newService);
+                      ))
+                  .toList(),
+              onChanged: (int? newValue) {
+                setState(() {
+                  _selectedCategoryId = newValue;
+                });
+              },
+              validator: (value) {
+                if (value == null) {
+                  return 'Please select a category';
                 }
+                return null;
               },
-              child: Text('Save'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cancel'),
             ),
           ],
         ),
       ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              widget.onSubmit(Service(
+                id: widget.service?.id ?? 0,
+                name: _nameController.text,
+                description: _descriptionController.text,
+                price: double.parse(_priceController.text),
+                duration: int.parse(_durationController.text),
+                isAvailable: _isAvailable,
+                imageUrl: _imageUrlController.text,
+                serviceCategoryId: _selectedCategoryId ?? 0,
+                serviceCategoryName: '', // Add the actual name if needed
+              ));
+            }
+          },
+          child: const Text('Submit'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+      ],
     );
   }
 }

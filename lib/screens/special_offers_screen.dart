@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,6 +6,8 @@ import '../config.dart' as config show apiUri;
 import 'package:intl/intl.dart';
 
 class DiscountScreen extends StatefulWidget {
+  const DiscountScreen({super.key});
+
   @override
   _DiscountScreenState createState() => _DiscountScreenState();
 }
@@ -22,7 +23,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
   }
 
   fetchSpecialOffers() async {
-    final Uri fullApiUrl = Uri.parse(config.apiUri + '/users/login');
+    final Uri fullApiUrl = Uri.parse('${config.apiUri}/users/login');
 
     final Map<String, String> body = {
       'email': 'desktop',
@@ -45,7 +46,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
 
     final response = await http.get(
       Uri.parse('${config.apiUri}/specialOffers'),
-      headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token},
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -65,39 +66,52 @@ class _DiscountScreenState extends State<DiscountScreen> {
       builder: (context) {
         String name = '';
         String description = '';
-        String expirationDate = '';
+        DateTime selectedDate = DateTime.now();
+        TextEditingController dateController = TextEditingController(
+          text: DateFormat('yyyy-MM-dd').format(selectedDate),
+        );
+
+        Future<void> selectDate(BuildContext context) async {
+          final DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: selectedDate,
+            firstDate: DateTime.now(),
+            lastDate: DateTime(2100),
+          );
+          if (picked != null && picked != selectedDate) {
+            selectedDate = picked;
+            dateController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+          }
+        }
 
         return AlertDialog(
-          title: Text('Add Special Offer'),
+          title: const Text('Add Special Offer'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                decoration: InputDecoration(labelText: 'Name'),
-                onChanged: (value) {
-                  name = value;
-                },
+                decoration: const InputDecoration(labelText: 'Name'),
+                onChanged: (value) => name = value,
               ),
               TextField(
-                decoration: InputDecoration(labelText: 'Description'),
-                onChanged: (value) {
-                  description = value;
-                },
+                decoration: const InputDecoration(labelText: 'Description'),
+                onChanged: (value) => description = value,
               ),
               TextField(
-                decoration: InputDecoration(labelText: 'Expiration Date (yyyy-MM-dd)'),
-                onChanged: (value) {
-                  expirationDate = value;
-                },
+                controller: dateController,
+                decoration: const InputDecoration(
+                  labelText: 'Expiration Date',
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+                readOnly: true,
+                onTap: () => selectDate(context),
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -109,13 +123,13 @@ class _DiscountScreenState extends State<DiscountScreen> {
                   name: name,
                   description: description,
                   isActive: true,
-                  offerExpirationDate: DateTime.parse(expirationDate),
+                  offerExpirationDate: selectedDate,
                 );
 
                 final response = await http.post(
                   Uri.parse('${config.apiUri}/specialOffers'),
                   headers: {
-                    HttpHeaders.authorizationHeader: 'Bearer ' + token,
+                    HttpHeaders.authorizationHeader: 'Bearer $token',
                     'Content-Type': 'application/json; charset=UTF-8',
                   },
                   body: jsonEncode(newOffer.toJson()),
@@ -128,7 +142,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                   throw Exception('Failed to add special offer');
                 }
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -142,43 +156,54 @@ class _DiscountScreenState extends State<DiscountScreen> {
       builder: (context) {
         String name = offer.name;
         String description = offer.description ?? '';
-        String expirationDate =
-            DateFormat('yyyy-MM-dd').format(offer.offerExpirationDate);
+        DateTime selectedDate = offer.offerExpirationDate;
+        TextEditingController dateController = TextEditingController(
+          text: DateFormat('yyyy-MM-dd').format(selectedDate),
+        );
+
+        Future<void> selectDate(BuildContext context) async {
+          final DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: selectedDate,
+            firstDate: DateTime.now(),
+            lastDate: DateTime(2100),
+          );
+          if (picked != null && picked != selectedDate) {
+            selectedDate = picked;
+            dateController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+          }
+        }
 
         return AlertDialog(
-          title: Text('Edit Special Offer'),
+          title: const Text('Edit Special Offer'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                decoration: InputDecoration(labelText: 'Name'),
+                decoration: const InputDecoration(labelText: 'Name'),
                 controller: TextEditingController(text: name),
-                onChanged: (value) {
-                  name = value;
-                },
+                onChanged: (value) => name = value,
               ),
               TextField(
-                decoration: InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(labelText: 'Description'),
                 controller: TextEditingController(text: description),
-                onChanged: (value) {
-                  description = value;
-                },
+                onChanged: (value) => description = value,
               ),
               TextField(
-                decoration: InputDecoration(labelText: 'Expiration Date (yyyy-MM-dd)'),
-                controller: TextEditingController(text: expirationDate),
-                onChanged: (value) {
-                  expirationDate = value;
-                },
+                controller: dateController,
+                decoration: const InputDecoration(
+                  labelText: 'Expiration Date',
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+                readOnly: true,
+                onTap: () => selectDate(context),
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -190,13 +215,13 @@ class _DiscountScreenState extends State<DiscountScreen> {
                   name: name,
                   description: description,
                   isActive: offer.isActive,
-                  offerExpirationDate: DateTime.parse(expirationDate),
+                  offerExpirationDate: selectedDate,
                 );
 
                 final response = await http.put(
                   Uri.parse('${config.apiUri}/specialOffers/${offer.id}'),
                   headers: {
-                    HttpHeaders.authorizationHeader: 'Bearer ' + token,
+                    HttpHeaders.authorizationHeader: 'Bearer $token',
                     'Content-Type': 'application/json; charset=UTF-8',
                   },
                   body: jsonEncode(updatedOffer.toJson()),
@@ -209,7 +234,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                   throw Exception('Failed to update special offer');
                 }
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -217,16 +242,15 @@ class _DiscountScreenState extends State<DiscountScreen> {
     );
   }
 
-
   void _deleteSpecialOffer(int offerId) async {
     final response = await http.delete(
       Uri.parse('${config.apiUri}/specialOffers/$offerId'),
-      headers: {HttpHeaders.authorizationHeader: 'Bearer ' + token},
+      headers: {HttpHeaders.authorizationHeader: 'Bearer $token'},
     );
     if (response.statusCode == 200) {
       fetchSpecialOffers();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Special offer deleted successfully!'),
           duration: Duration(seconds: 2),
         ),
@@ -240,15 +264,15 @@ class _DiscountScreenState extends State<DiscountScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: specialOffers.isEmpty
-          ? Center(
+          ? const Center(
               child: Text(
                 'No special offers available',
                 style: TextStyle(fontSize: 24, color: Colors.grey),
               ),
             )
           : GridView.builder(
-              padding: EdgeInsets.all(8.0),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              padding: const EdgeInsets.all(8.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 crossAxisSpacing: 8.0,
                 mainAxisSpacing: 8.0,
@@ -267,7 +291,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
                     children: [
                       Expanded(
                         child: ClipRRect(
-                          borderRadius: BorderRadius.vertical(
+                          borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(10.0)),
                           child: Image.network(
                             'https://static.vecteezy.com/system/resources/thumbnails/025/491/970/small_2x/relaxing-spa-treatment-women-enjoy-pampering-massage-therapy-indoors-generated-by-ai-free-photo.jpg',
@@ -276,34 +300,34 @@ class _DiscountScreenState extends State<DiscountScreen> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               offer.name,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 16.0,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4.0),
+                            const SizedBox(height: 4.0),
                             Text(
                               'Expires on: ${DateFormat('yyyy-MM-dd').format(offer.offerExpirationDate)}',
-                              style: TextStyle(fontSize: 14.0, color: Colors.grey),
+                              style: const TextStyle(fontSize: 14.0, color: Colors.grey),
                             ),
                           ],
                         ),
                       ),
-                      ButtonBar(
+                      OverflowBar(
                         alignment: MainAxisAlignment.spaceBetween,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.edit, color: Colors.blue),
+                            icon: const Icon(Icons.edit, color: Colors.blue),
                             onPressed: () => _editSpecialOffer(offer),
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete, color: Colors.red),
+                            icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () => _deleteSpecialOffer(offer.id),
                           ),
                         ],
@@ -315,7 +339,7 @@ class _DiscountScreenState extends State<DiscountScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addSpecialOffer,
-        child: Icon(Icons.add, color: Colors.teal),
+        child: const Icon(Icons.add, color: Colors.teal),
       ),
     );
   }

@@ -14,6 +14,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -30,15 +32,17 @@ class WelcomeScreen extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  WelcomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 76, 175, 142),
+      backgroundColor: const Color.fromARGB(255, 76, 175, 142),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'eWellness',
               style: TextStyle(
                 fontSize: 36,
@@ -46,15 +50,15 @@ class WelcomeScreen extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            SizedBox(height: 10),
-            Text(
+            const SizedBox(height: 10),
+            const Text(
               'Admin Module',
               style: TextStyle(
                 fontSize: 24,
                 color: Colors.white,
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             // Add username input field
             Container(
               width: MediaQuery.of(context).size.width *
@@ -75,7 +79,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // Add password input field
             Container(
               width: MediaQuery.of(context).size.width *
@@ -97,7 +101,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 // Check username and password
@@ -113,7 +117,7 @@ class WelcomeScreen extends StatelessWidget {
                 } else {
                   // Show error message if credentials are incorrect
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Invalid username or password'),
                       backgroundColor: Colors.red,
                     ),
@@ -122,9 +126,9 @@ class WelcomeScreen extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: Color.fromARGB(255, 76, 175, 142),
+                foregroundColor: const Color.fromARGB(255, 76, 175, 142),
               ),
-              child: Text(
+              child: const Text(
                 'Login',
                 style: TextStyle(
                   color: Color.fromARGB(255, 76, 175, 142),
@@ -139,6 +143,8 @@ class WelcomeScreen extends StatelessWidget {
 }
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -167,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('eWellness'),
+        title: const Text('eWellness'),
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
@@ -175,46 +181,46 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: true,
         showUnselectedLabels: true,
-        items: <BottomNavigationBarItem>[
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Services',
-            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+            backgroundColor: Color.fromARGB(255, 76, 175, 142),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.business),
             label: 'Clients',
-            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+            backgroundColor: Color.fromARGB(255, 76, 175, 142),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.payment),
             label: 'Payments',
-            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+            backgroundColor: Color.fromARGB(255, 76, 175, 142),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.tips_and_updates),
             label: 'Tips',
-            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+            backgroundColor: Color.fromARGB(255, 76, 175, 142),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.category),
             label: 'Service Categories',
-            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+            backgroundColor: Color.fromARGB(255, 76, 175, 142),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: 'Appointments',
-            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+            backgroundColor: Color.fromARGB(255, 76, 175, 142),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.discount),
             label: 'Discounts',
-            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+            backgroundColor: Color.fromARGB(255, 76, 175, 142),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.query_stats),
             label: 'Stats',
-            backgroundColor: const Color.fromARGB(255, 76, 175, 142),
+            backgroundColor: Color.fromARGB(255, 76, 175, 142),
           ),
         ],
         currentIndex: _selectedIndex,
